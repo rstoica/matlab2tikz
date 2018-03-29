@@ -57,4 +57,6 @@ function matlab2tikzpdf(varargin)
     fileout = [basename,'.pdf'];
     system(['pdflatex ',texfile,' && pdfcrop ',fileouttex,' && mv ',filecrop,' ',fileout,' && rm ',fileouttex],'-echo');
     system(['rm ',logtexfile,' ',auxtexfile]);
+    % Store the fig file for MATLAB reuse as well
+    savefig([basename,'.fig']);
 end
