@@ -30,8 +30,13 @@ function matlab2tikzpdf(varargin)
     matlab2tikz(varargin{:});
 
     % Create pdflatex file
-    [~, basename, ext] = fileparts(varargin{2});
-    texfile = [basename,'-out2pdf',ext];
+    [path, basename, ext] = fileparts(varargin{2});
+    if ~isempty(path)
+        path = [path,filesep];
+    end
+    texfile = [path,basename,'-out2pdf',ext];
+    % pdflatex references with respect to its cwd so leave the input line as given
+    texinputfile = varargin{2};
     logtexfile = [basename,'-out2pdf.log'];
     auxtexfile = [basename,'-out2pdf.aux'];
     fid = fopen(texfile, 'wt');
@@ -44,19 +49,20 @@ function matlab2tikzpdf(varargin)
                        '\\usepackage{amsmath}\n', ...
                        '\\pagestyle{empty}\n', ...
                        '\\begin{document}\n', ...
-                       '    \\input{',varargin{2},'}\n', ...
+                       '    \\input{',texinputfile,'}\n', ...
                        '\\end{document}\n']);
     fprintf(fid, '%s', textext);
     fclose(fid);
     
     % Store the filename to process
-    [~, basename, ~] = fileparts(texfile);    
+    [~, basename, ~] = fileparts(texfile);
     fileouttex = [basename, '.pdf'];
     filecrop = [basename, '-crop.pdf'];
     [~, basename, ~] = fileparts(varargin{2});
-    fileout = [basename,'.pdf'];
+    fileout = [path,basename,'.pdf'];
+    filematlabfig = [path,basename,'.fig'];
     system(['pdflatex ',texfile,' && pdfcrop ',fileouttex,' && mv ',filecrop,' ',fileout,' && rm ',fileouttex],'-echo');
     system(['rm ',logtexfile,' ',auxtexfile]);
     % Store the fig file for MATLAB reuse as well
-    savefig([basename,'.fig']);
+    savefig(filematlabfig);
 end
